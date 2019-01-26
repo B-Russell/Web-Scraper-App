@@ -6,9 +6,9 @@ import time, smtplib, pymysql, subprocess
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.config['SECRET_KEY'] = '7d441f27d441f27567d441f2b6176a'
+app.config['SECRET_KEY'] = '7d441f27d441f27567d441f2fdvab'
 
-conn = pymysql.connect(host='localhost', port = 3307, user='root', passwd='shoot72',db='userinfo') 
+conn = pymysql.connect(host='localhost', port = 3307, user='root', passwd='pwd',db='userinfo') 
 cursor = conn.cursor()
 
 class ReusableForm(Form):
@@ -22,16 +22,13 @@ def main():
         if form.validate():
             link=request.form['link']
             email=request.form['email']
-   
             flash('You will be notified on any changes in stock or price')
-            
             insert(link, email)
     return render_template('WebPage1.html', form=form)
-#constraints
 
 def scrapeData(link, email):
-    data = 'https://shop.havenshop.com/products/undercover-ucv3805-t-shirt-white'
-    early_page = urlopen(data)
+    #data = 'https://shop.havenshop.com/products/undercover-ucv3805-t-shirt-white'
+    early_page = urlopen(link)
     page = BeautifulSoup(early_page, 'html.parser')
 
     price = page.find('div', attrs = {'class', 'price-main'})
@@ -56,7 +53,6 @@ def insert(link, email):
     except:
         conn.rollback()
 
-
 def getTable():
     qu = "Select * from haven"
     cursor.execute(qu)
@@ -77,26 +73,22 @@ def update(link, email):
         mail(link, email, new_stock, new_price)
     except:
         conn.rollback()
-    
     if new_stock == '0000':
         return False
     return True
 
 def mail(link, email, stock, price):
-    #try:
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
-    server.login("stock.webapp.notification@gmail.com", "shoot72!")
+    server.login("stock.webapp.notification@gmail.com", "pwd")
 
     message = "Details for product" + link + "Price: " + price + "Small stock: " + stock[0] \
     + "Medium stock: " + stock[1] + "Large stock: " + stock[2] + "Extra large stock: " + stock[3] \
     + "This message was sent from... If you wish to stop receiving messages ..."
     server.sendmail("stock.webapp.notification@gmail.com", email, message)
     server.quit()
-    #except:
-        #print('Error')
+
 
 if __name__ == '__main__':
-    app.run('localhost', 4469)
+    app.run('localhost')
 
-#Other possible features: auto-buy if it dips to 1, other websites 
